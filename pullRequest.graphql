@@ -1,0 +1,40 @@
+query {
+  repository(owner: "rust-lang", name: "rfcs") {
+    pullRequest(number: $PR_NUMBER) {
+      number
+      title
+      createdAt
+      mergedAt
+      state
+      labels(first: 10) {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+      timeline($PAGEINATION) {
+        totalCount
+        pageInfo {
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          startCursor
+        }
+        nodes {
+          __typename
+          ... on IssueComment {
+            author {
+              login
+            }
+            bodyText
+            createdAt
+          }
+          ... on ClosedEvent {
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}

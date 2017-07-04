@@ -1,0 +1,20 @@
+{
+  "name": "data",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "dependencies": {
+    "fs-extra": "^3.0.1",
+    "json2csv": "^3.8.0",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.1.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

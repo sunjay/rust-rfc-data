@@ -1,0 +1,17 @@
+query {
+  repository(owner: "rust-lang", name: "rfcs") {
+    pullRequests($PAGEINATION) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      nodes {
+        number
+        title
+      }
+    }
+  }
+}
