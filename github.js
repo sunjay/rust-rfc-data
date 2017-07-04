@@ -6,7 +6,7 @@ const ENDPOINT = 'https://api.github.com/graphql';
 const CONNECTION_LIMIT = 10;
 // Avoid everything failing and GitHub thinking you're abusing the API by adding
 // a delay between requests
-const REQUEST_DELAY = 2000; // ms
+const REQUEST_DELAY = 2500; // ms
 
 const PULL_REQUEST_QUERY = fs.readFileSync('pullRequest.graphql').toString();
 const PULL_REQUEST_LIST_QUERY = fs.readFileSync('pullRequestList.graphql').toString();
@@ -111,7 +111,6 @@ class QueryPool {
   _dispatchNext() {
     if (this.requests < CONNECTION_LIMIT && this.queue.length > 0) {
       setTimeout(() => this._sendQuery(this.queue.shift()), REQUEST_DELAY);
-      ;
     }
   }
 }
