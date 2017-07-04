@@ -15,7 +15,7 @@ You can get one here: https://github.com/settings/tokens (no need for any permis
 
 github.fetchPullRequestList(TOKEN)
   .then(writeData)
-  .then(() => console.log(`Done. Output: ${OUTPUT}`));
+  .then(() => console.info(`Done. Output: ${OUTPUT}`));
 
 function writeData(data) {
   return fs.writeFile(OUTPUT, JSON.stringify(data, null, 2));

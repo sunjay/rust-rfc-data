@@ -13,14 +13,14 @@ exports.fetchPullRequestList = (token) => {
   const fetchPage = ({data: {repository: {pullRequests}}}) => {
     const {totalCount, pageInfo, nodes} = pullRequests;
 
-    console.log(`Downloading ${totalCount} pull requests...`);
+    console.info(`Downloading ${totalCount} pull requests...`);
     let nextPage = Promise.resolve([]);
     if (pageInfo.hasNextPage) {
       nextPage = queryPullRequestList(token, pageInfo.endCursor).then(fetchPage);
     }
 
     const completed = Promise.all(nodes.map(({number, title}) => {
-      console.log(`Downloading PR #${number} ${title}`);
+      console.info(`Downloading PR #${number} ${title}`);
       return fetchPullRequest(token, number);
     }));
 
@@ -32,20 +32,17 @@ exports.fetchPullRequestList = (token) => {
 
 function fetchPullRequest(token, number) {
   const fetchPage = ({data: {repository: {pullRequest}}}) => {
-    const {totalCount, pageInfo, nodes} = pullRequest.timeline;
+    const {pageInfo} = pullRequest.timeline;
 
-    let nextPage = Promise.resolve({timeline: []});
+    let nextPage = Promise.resolve({timeline: {nodes: []}});
     if (pageInfo.hasNextPage) {
       nextPage = queryPullRequest(token, number, pageInfo.endCursor).then(fetchPage);
     }
 
-    return nextPage.then(({timeline}) => ({
-      ...pullRequest,
-      timeline: [
-        ...pullRequest.timeline,
-        ...timeline,
-      ],
-    }));
+    return nextPage.then(({timeline}) => {
+      pullRequest.timeline.nodes.push(...timeline.nodes);
+      return pullRequest;
+    });
   };
 
   return queryPullRequest(token, number).then(fetchPage);

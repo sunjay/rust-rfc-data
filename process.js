@@ -9,12 +9,12 @@ const OUTPUT = 'rfcs.csv';
 fs.readFile(DATA)
   .then(processData)
   .then(writeResults)
-  .then(() => console.log(`Done. Output: ${OUTPUT}`));
+  .then(() => console.info(`Done. Output: ${OUTPUT}`));
 
 function processData(jsondata) {
   const {data} = JSON.parse(jsondata);
   const pulls = data.repository.pullRequests;
-  console.log(`Processing ${pulls.nodes.length} RFC PRs of the ${pulls.totalCount} which are available online`);
+  console.info(`Processing ${pulls.nodes.length} RFC PRs of the ${pulls.totalCount} which are available online`);
 
   return pulls.nodes.map((pr) => {
     return {
