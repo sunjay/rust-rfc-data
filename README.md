@@ -23,6 +23,13 @@ To download the data to a file called `data.json`:
 node --harmony getdata.js <TOKEN>
 ```
 
+Notes:
+
+* Data downloading is resumable and each PR will be cached one at a time in the `data/` directory.
+* Once all downloads succeed, they will all be placed into a single `data.json` file
+* You may *often* need to stop the downloading with Ctrl/Cmd+C when you run into GitHub's rate limiting
+* This is despite the very conservative limits imposed on the downloading code (downloading is slow on purpose)
+
 To collect some stats from the data and write a CSV file:
 
 ```
