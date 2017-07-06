@@ -1,12 +1,14 @@
+const path = require('path');
+
 const fs = require('fs-extra');
 const request = require('request-promise');
 
 const ENDPOINT = 'https://api.github.com/graphql';
 // The limit on the number of concurrent requests (so GitHub doesn't think we're spamming)
-const CONNECTION_LIMIT = 10;
+const CONNECTION_LIMIT = 2;
 // Avoid everything failing and GitHub thinking you're abusing the API by adding
 // a delay between requests
-const REQUEST_DELAY = 5000; // ms
+const REQUEST_DELAY = 10000; // ms
 
 const PULL_REQUEST_QUERY = fs.readFileSync('pullRequest.graphql').toString();
 const PULL_REQUEST_LIST_QUERY = fs.readFileSync('pullRequestList.graphql').toString();
@@ -14,20 +16,18 @@ const PULL_REQUEST_LIST_QUERY = fs.readFileSync('pullRequestList.graphql').toStr
 /**
  * Fetch all pull requests rapidly in parallel
  */
-exports.fetchPullRequestList = (token) => {
+exports.fetchPullRequestList = (token, dataDir) => {
   const pool = new QueryPool(token);
   const fetchPage = ({data: {repository: {pullRequests}}}) => {
     const {totalCount, pageInfo, nodes} = pullRequests;
 
-    console.info(`Downloading ${totalCount} pull requests...`);
     let nextPage = Promise.resolve([]);
     if (pageInfo.hasNextPage) {
       nextPage = queryPullRequestList(pool, pageInfo.endCursor).then(fetchPage);
     }
 
-    const completed = Promise.all(nodes.map(({number, title}) => {
-      console.info(`Downloading PR #${number} ${title}`);
-      return fetchPullRequest(pool, number);
+    const completed = Promise.all(nodes.map((pr) => {
+      return fetchPullRequest(pool, dataDir, pr);
     }));
 
     return nextPage.then((page) => completed.then((items) => items.concat(page)));
@@ -36,7 +36,7 @@ exports.fetchPullRequestList = (token) => {
   return queryPullRequestList(pool).then(fetchPage);
 };
 
-function fetchPullRequest(pool, number) {
+function fetchPullRequest(pool, dataDir, {number, title}) {
   const fetchPage = ({data: {repository: {pullRequest}}}) => {
     const {pageInfo} = pullRequest.timeline;
 
@@ -51,18 +51,31 @@ function fetchPullRequest(pool, number) {
     });
   };
 
-  return queryPullRequest(pool, number).then(fetchPage);
+  const cache = path.join(dataDir, `PR${number}.json`);
+  return fs.readFile(cache).then((data) => {
+    console.info(`Not downloading from API: Found local cache for PR #${number} ${title}`);
+    return JSON.parse(data);
+  }).catch((err) => {
+    if (err.code === 'ENOENT') {
+      return queryPullRequest(pool, number, null, () => {
+        console.info(`Downloading PR #${number} ${title}`);
+      }).then(fetchPage).then((pr) => {
+        return fs.writeFile(cache, JSON.stringify(pr, null, 2)).then(() => pr);
+      });
+    }
+    return Promise.reject(err);
+  });
 }
 
-function queryPullRequestList(pool, after = undefined) {
+function queryPullRequestList(pool, after = null) {
   return pool.query(PULL_REQUEST_LIST_QUERY
     .replace('$PAGEINATION', pagination({pageSize: 100, after})));
 }
 
-function queryPullRequest(pool, number, after = undefined) {
+function queryPullRequest(pool, number, after = null, before = () => {}) {
   return pool.query(PULL_REQUEST_QUERY
     .replace('$PR_NUMBER', number)
-    .replace('$PAGEINATION', pagination({pageSize: 100, after})));
+    .replace('$PAGEINATION', pagination({pageSize: 100, after})), before);
 }
 
 function pagination({pageSize, after = null}) {
@@ -78,14 +91,15 @@ class QueryPool {
     this.requests = 0;
   }
 
-  query(query) {
+  query(query, before = () => {}) {
     return new Promise((resolve, reject) => {
-      this.queue.push({query, resolve, reject});
+      this.queue.push({query, before, resolve, reject});
       this._dispatchNext();
     });
   }
 
-  _sendQuery({query, resolve, reject}) {
+  _sendQuery({query, before, resolve, reject}) {
+    before();
     this.requests += 1;
     request.post({
       url: ENDPOINT,
@@ -104,7 +118,7 @@ class QueryPool {
       this.requests -= 1;
       this._dispatchNext();
 
-      resolve(result);
+      return resolve(result);
     }).catch((err) => {
       this.requests -= 1;
       this._dispatchNext();
@@ -115,7 +129,7 @@ class QueryPool {
   _dispatchNext() {
     if (this.requests < CONNECTION_LIMIT && this.queue.length > 0) {
       const next = this.queue.shift();
-      setTimeout(() => this._sendQuery(next), (Math.random() + 0.5) * REQUEST_DELAY);
+      setTimeout(() => this._sendQuery(next), (Math.random() * 0.4 + 0.8) * REQUEST_DELAY);
     }
   }
 }

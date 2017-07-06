@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const github = require('./github');
 
 const OUTPUT = 'data.json';
+const DATA_DIR = 'data/';
 const TOKEN = process.argv[2].trim();
 if (!TOKEN) {
   console.error(`\
@@ -13,7 +14,7 @@ You can get one here: https://github.com/settings/tokens (no need for any permis
   process.exit(1);
 }
 
-github.fetchPullRequestList(TOKEN)
+github.fetchPullRequestList(TOKEN, DATA_DIR)
   .then(writeData)
   .then(() => console.info(`Done. Output: ${OUTPUT}`));
 

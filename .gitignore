@@ -1,5 +1,7 @@
 data.json
 *.csv
+data/*
+!data/.gitkeep
 
 # Created by https://www.gitignore.io/api/node
 
