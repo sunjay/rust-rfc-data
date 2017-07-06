@@ -16,7 +16,12 @@ You can get one here: https://github.com/settings/tokens (no need for any permis
 
 github.fetchPullRequestList(TOKEN, DATA_DIR)
   .then(writeData)
-  .then(() => console.info(`Done. Output: ${OUTPUT}`));
+  .then(() => console.info(`Done. Output: ${OUTPUT}`))
+  .catch((err) => {
+    console.error('DOWNLOADING FAILED: You may be triggering GitHub\'s abuse detection system. Please try again in a few minutes.');
+    console.error(err);
+    process.exit(1);
+  });
 
 function writeData(data) {
   return fs.writeFile(OUTPUT, JSON.stringify(data, null, 2));
