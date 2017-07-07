@@ -19,7 +19,7 @@ const PULL_REQUEST_LIST_QUERY = fs.readFileSync('pullRequestList.graphql').toStr
 exports.fetchPullRequestList = (token, dataDir) => {
   const pool = new QueryPool(token);
   const fetchPage = ({data: {repository: {pullRequests}}}) => {
-    const {totalCount, pageInfo, nodes} = pullRequests;
+    const {pageInfo, nodes} = pullRequests;
 
     let nextPage = Promise.resolve([]);
     if (pageInfo.hasNextPage) {
