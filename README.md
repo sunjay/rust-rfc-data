@@ -2,20 +2,25 @@
 
 Download and process data about Rust RFC PRs.
 
-## Usage
+This is done in two stages so you don't have to redownload the data each time
+you change how you process it.
+
+## Installation & Usage
 
 You will need:
 
 * a recent installation of [Node.js] (>=v8.1.3)
 * a [GitHub personal access token](token) (no permissions necessary, just generate a token)
 
-To install the dependencies:
+### 1. To install the dependencies
 
 ```
 npm install
 ```
 
-To download the data to a file called `data.json`:
+### 2. To download the data
+
+Data is downloaded into a file called `data.json`.
 
 ```sh
 ./getdata.js <TOKEN>
@@ -30,16 +35,15 @@ Notes:
 * You may *often* need to stop the downloading with Ctrl/Cmd+C when you run into GitHub's rate limiting
 * This is despite the very conservative limits imposed on the downloading code (downloading is slow on purpose)
 
-To collect some stats from the data and write a CSV file:
+### 3. To collect some stats from the data and write a CSV file:
+
+Output is written to a file called `rfcs.csv`.
 
 ```
 ./process.js
 # Or
 node --harmony process.js
 ```
-
-This is done in two stages so you don't have to redownload the data each time
-you change how you process it.
 
 [Node.js]: https://nodejs.org/
 [token]: https://github.com/settings/tokens
