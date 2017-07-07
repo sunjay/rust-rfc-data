@@ -29,7 +29,7 @@ module.exports = {
         ],
         "block-scoped-var": "error",
         "block-spacing": "error",
-        "brace-style": "error",
+        "brace-style": ["error", "stroustrup"],
         "callback-return": "error",
         "camelcase": "error",
         "capitalized-comments": "off",
