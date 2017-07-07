@@ -8,7 +8,7 @@ const ENDPOINT = 'https://api.github.com/graphql';
 const CONNECTION_LIMIT = 2;
 // Avoid everything failing and GitHub thinking you're abusing the API by adding
 // a delay between requests
-const REQUEST_DELAY = 2000; // ms
+const REQUEST_DELAY = 1000; // ms
 
 const PULL_REQUEST_QUERY = fs.readFileSync('pullRequest.graphql').toString();
 const PULL_REQUEST_LIST_QUERY = fs.readFileSync('pullRequestList.graphql').toString();
